@@ -116,15 +116,31 @@
   nav a:focus-visible, .btn:focus-visible, .icard:focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
 
   .header-right{display:flex; align-items:center; gap:18px;}
-  .btn{padding:11px 22px; border-radius:6px; font-size:13px; font-weight:700; letter-spacing:0.03em; text-transform:uppercase;}
+  .btn{
+    padding:11px 22px; border-radius:6px; font-size:13px; font-weight:700; letter-spacing:0.03em; text-transform:uppercase;
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    white-space:nowrap; max-width:100%;
+  }
   .btn-gold{
     background:linear-gradient(180deg, #ffd45c, var(--gold) 55%, var(--gold-deep));
     color:#1a1204;
     box-shadow:0 2px 0 #8a6300, 0 6px 18px rgba(255,199,44,0.25);
-    transition:transform .15s, box-shadow .15s;
+    transition:transform .15s, box-shadow .15s, background .2s;
   }
   .btn-gold:hover{transform:translateY(-1px); box-shadow:0 3px 0 #8a6300, 0 10px 22px rgba(255,199,44,0.35);}
   .btn-gold:active{transform:translateY(1px); box-shadow:0 1px 0 #8a6300;}
+  .btn-gold.copied{
+    background:linear-gradient(180deg, #6ff0a0, var(--green) 60%, var(--green-dim));
+    color:#06210f;
+    box-shadow:0 2px 0 var(--green-dim), 0 6px 18px rgba(47,214,107,0.25);
+  }
+
+  /* header play button: keep it from ever breaking out of the header row */
+  #playBtnTop{
+    min-width:96px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
 
   .status-pill{display:flex; align-items:center; gap:8px; padding:9px 14px; border:1px solid var(--panel-line); border-radius:20px; font-size:12px; letter-spacing:0.05em; color:var(--white-dim);}
   .dot{width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green);}
@@ -231,6 +247,14 @@
     display:flex; align-items:center; gap:8px; transition:border-color .2s, background .2s;
   }
   .btn-outline:hover{border-color:var(--gold); background:rgba(255,199,44,0.08);}
+  .btn-wrap{white-space:normal; text-align:center; line-height:1.4; max-width:100%;}
+
+  /* hero play button: same overflow safety as the header one */
+  #playBtnHero{
+    min-width:220px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
 
   .stat-row{display:flex; gap:16px; margin-top:56px; flex-wrap:wrap;}
   .chip{background:rgba(23,25,19,0.75); backdrop-filter:blur(6px); border:1px solid var(--panel-line); border-radius:10px; padding:16px 22px; min-width:150px;}
@@ -456,6 +480,11 @@
     h1.hero-title{font-size:clamp(40px, 14vw, 64px);}
     .section{padding:60px 20px;}
     .cta-band{flex-direction:column; align-items:flex-start; text-align:left;}
+    #playBtnHero{min-width:0;}
+  }
+  @media (max-width:400px){
+    .header-right{gap:10px;}
+    #playBtnTop{min-width:0; padding:11px 14px;}
   }
 </style>
 </head>
@@ -481,7 +510,7 @@
     <button class="theme-toggle" id="themeToggle" aria-label="Kun/tun rejimini almashtirish" title="Kun/tun rejimi">
       <span id="themeIcon">🌙</span>
     </button>
-    <button class="btn btn-gold">O'ynash</button>
+    <button class="btn btn-gold" id="playBtnTop" onclick="copyIPButton(this)">O'ynash</button>
   </div>
 </header>
 
@@ -522,8 +551,8 @@
     <p class="hero-desc">GoldStax — do'stlaring bilan birga sarguzashtga to'la, mustahkam iqtisodiyotga ega Minecraft serveri. Kon qazi, qur, savdo qil va o'z hikoyangni yoz.</p>
 
     <div class="hero-cta">
-      <button class="btn btn-gold">O'ynashni boshlash</button>
-      <button class="btn btn-outline">Magazinga o'tish ↗</button>
+      <button class="btn btn-gold" id="playBtnHero" onclick="copyIPButton(this)">O'ynashni boshlash</button>
+      <a class="btn btn-outline btn-wrap" href="https://t.me/SlayerKnight_o11" target="_blank" rel="noopener">Muammo yoki buglar bo'lsa @SlayerKnight_o11 ga murojaat qiling ↗</a>
     </div>
 
     <div class="stat-row">
@@ -811,6 +840,29 @@ function copyIP(btn){
   btn.textContent = 'Nusxalandi ✓';
   btn.classList.add('copied');
   setTimeout(()=>{ btn.textContent = original; btn.classList.remove('copied'); }, 1800);
+}
+
+/* Copy IP for the header / hero "play" buttons.
+   Locks the button's current width first so the shorter/longer
+   "Nusxalandi" label never makes it grow and overflow its row. */
+function copyIPButton(btn){
+  navigator.clipboard.writeText('mc.goldstax.uz').catch(()=>{});
+  if(btn.dataset.busy === '1') return;
+  btn.dataset.busy = '1';
+
+  const original = btn.textContent;
+  const lockedWidth = btn.getBoundingClientRect().width;
+  btn.style.width = lockedWidth + 'px';
+
+  btn.textContent = 'Nusxalandi ✓';
+  btn.classList.add('copied');
+
+  setTimeout(() => {
+    btn.textContent = original;
+    btn.classList.remove('copied');
+    btn.style.width = '';
+    btn.dataset.busy = '0';
+  }, 1800);
 }
 
 /* floating embers over the scene, purely decorative */
